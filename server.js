@@ -1,8 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-
 const dotenv = require("dotenv");
-require("dotenv").config();
 const mongoose = require("mongoose");
 const fast2sms = require("fast-two-sms");
 const otplib = require("otplib");
@@ -17,7 +15,6 @@ dotenv.config();
 const app = express();
 
 app.use(cors());
-
 app.use(express.json());
 
 mongoose
@@ -53,14 +50,14 @@ const sendMessage = async (mobile, token) => {
 };
 
 app.post("/signup", async (req, res) => {
-  const { name, email, password, phone } = req.body;
+  const { username, usermail, password, userphone } = req.body;
 
   try {
-    if (!name || !email || !password) {
+    if (!username || !usermail || !password || !userphone) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    const existingUser = await UserModel.findOne({ email });
+    const existingUser = await UserModel.findOne({ usermail });
     if (existingUser) {
       return res.status(409).json({ error: "Email already exists" });
     }
@@ -68,21 +65,22 @@ app.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new UserModel({
-      name,
-      email,
+      username,
+      usermail,
       password: hashedPassword,
-      phone: phone || null,
+      userphone,  // Corrected from `phone` to `userphone`
     });
 
     const savedUser = await newUser.save();
     const token = generateOTP();
-    otpStore[phone] = token;
+    otpStore[userphone] = token;
 
-    const result = await sendMessage(phone, token);
+    const result = await sendMessage(userphone, token);
     if (result.success) {
       res.status(201).json({
-        name: savedUser.name,
-        email: savedUser.email,
+        username: savedUser.username,  // Ensure the keys match the model
+        usermail: savedUser.usermail,
+        userphone: savedUser.userphone,
         id: savedUser._id,
         otpSent: true,
         message:
@@ -120,7 +118,7 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ usermail: email }); // Corrected to match the field name
     if (!user) {
       return res.status(401).json({ message: "No user found" });
     }
@@ -131,7 +129,7 @@ app.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { email: user.email, id: user._id },
+      { email: user.usermail, id: user._id },
       process.env.JWT_SECRET,
       {
         expiresIn: "90d",
