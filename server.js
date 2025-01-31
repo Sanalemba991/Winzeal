@@ -49,47 +49,53 @@ const sendMessage = async (mobile, token) => {
   }
 };
 
+const { v4: uuidv4 } = require("uuid");
+
 app.post("/signup", async (req, res) => {
-  const { username, usermail, password, userphone } = req.body;
+  const { name, email, password, phone } = req.body;
 
   try {
-    if (!username || !usermail || !password || !userphone) {
+    if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    const existingUser = await UserModel.findOne({ usermail });
+    const customUserId = "LUDO_" + phone;
+    const existingUser = await UserModel.findOne({
+      $or: [{ email }, { customUserId }, { phone }],
+    });
+
     if (existingUser) {
-      return res.status(409).json({ error: "Email already exists" });
+      return res.status(409).json({ error: "User already exists with given email, user ID, or phone number" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new UserModel({
-      username,
-      usermail,
+      userid: customUserId, // Assign the generated userId here
+      name,
+      email,
       password: hashedPassword,
-      userphone,  // Corrected from `phone` to `userphone`
+      phone: phone || null,
     });
 
     const savedUser = await newUser.save();
-    const token = generateOTP();
-    otpStore[userphone] = token;
 
-    const result = await sendMessage(userphone, token);
+    const token = generateOTP();
+    otpStore[phone] = token;
+
+    const result = await sendMessage(phone, token);
+
     if (result.success) {
       res.status(201).json({
-        username: savedUser.username,  // Ensure the keys match the model
-        usermail: savedUser.usermail,
-        userphone: savedUser.userphone,
+        userId: savedUser.userid, // Return the custom user ID
+        name: savedUser.name,
+        email: savedUser.email,
         id: savedUser._id,
         otpSent: true,
-        message:
-          "User registered successfully. OTP sent to the registered phone number.",
+        message: "User registered successfully. OTP sent to the registered phone number.",
       });
     } else {
-      res
-        .status(500)
-        .json({ error: "User registered, but failed to send OTP." });
+      res.status(500).json({ error: "User registered, but failed to send OTP." });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -100,15 +106,11 @@ app.post("/verify-otp", (req, res) => {
   const { mobileNumber, otp } = req.body;
 
   if (!otp || !mobileNumber) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Mobile number and OTP are required." });
+    return res.status(400).json({ success: false, message: "Mobile number and OTP are required." });
   }
 
   if (otpStore[mobileNumber] && otpStore[mobileNumber] === otp) {
-    res
-      .status(200)
-      .json({ success: true, message: "OTP verified successfully!" });
+    res.status(200).json({ success: true, message: "OTP verified successfully!" });
   } else {
     res.status(400).json({ success: false, message: "Invalid OTP." });
   }
@@ -118,7 +120,7 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await UserModel.findOne({ usermail: email }); // Corrected to match the field name
+    const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "No user found" });
     }
@@ -129,7 +131,7 @@ app.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { email: user.usermail, id: user._id },
+      { email: user.email, id: user._id },
       process.env.JWT_SECRET,
       {
         expiresIn: "90d",

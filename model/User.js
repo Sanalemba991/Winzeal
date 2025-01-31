@@ -1,98 +1,99 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  username: {
+  name: {
     type: String,
     required: true,
-    unique: true,  // Ensure username is unique
+    unique: false,
   },
 
   created_at: {
-    type: String,  // Changed from Date to String
-    default: Date.now().toString(),  // Default value as string representation of current date
+    type: Date,
+    default: Date.now,  // Automatically sets the creation timestamp
   },
-  
+
   updated_at: {
-    type: String,  // Changed from Date to String
-    default: Date.now().toString(),  // Default value as string representation of current date
+    type: Date,
+    default: Date.now,  // Sets the initial updated_at to the creation time
   },
 
   userid: {
     type: String,
-    required: false,
-    unique: true,  // Ensure user ID is unique
+    required: true,
+    unique: true,
   },
 
   player: {
     type: String,
-    default: null,
+    default: "",
   },
 
-  usermail: {
+  email: {
     type: String,
     required: true,
-    unique: true,  // Ensure usermail is unique
+    unique: true,
   },
 
-  userphone: {
+  phone: {
     type: String,
-    default: null,
-    unique: true,  // Ensure user phone is unique
+    default: "",
+    unique: true,
   },
 
   password: {
     type: String,
-    required: true,
+      required: true,
+      default: "",
   },
 
   OTPCode: {
-    type: String,  // OTP code as a string
-    default: null,
+    type: String,
+    default: "",
   },
 
   photo: {
-    type: String,  // Assuming photo URL or path as string
-    default: null,
+    type: String,
+    default: "",
   },
 
   refer_code: {
-    type: String,  // Assuming referral code as string
-    default: null,
+    type: String,
+    default: "",
   },
 
   used_refer_code: {
-    type: String,  // Assuming used referral code as string
-    default: null,
+    type: String,
+    default: "",
   },
 
   totalgem: {
-    type: String,  // Total gems as string
+    type: String,
     default: "0",
   },
 
   totalcoin: {
-    type: String,  // Total coins as string
+    type: String,
     default: "0",
   },
 
   playcoin: {
-    type: String,  // Play coins as string
+    type: String,
     default: "0",
   },
 
   wincoin: {
-    type: String,  // Win coins as string
+    type: String,
     default: "0",
   },
 
   device_token: {
     type: String,
-    default: null,
+    default: "",
   },
 
   registerDate: {
     type: String,
-    default: null,
+    default: "",
   },
 
   refrelCoin: {
@@ -106,143 +107,161 @@ const userSchema = new mongoose.Schema({
   },
 
   game_played_amount: {
-    type: String,  // Game played amount as string
+    type: String,
     default: "0",
   },
 
   game_win_amount: {
-    type: String,  // Game win amount as string
+    type: String,
     default: "0",
   },
 
   HandGamePlayed: {
-    type: String,  // Hand game played as string
+    type: String,
     default: "0",
   },
 
   hg_win: {
-    type: String,  // Hand game win amount as string
+    type: String,
     default: "0",
   },
 
   twoPlayWin: {
     type: String,
-    default: null,
+    default: "",
   },
 
   FourPlayWin: {
     type: String,
-    default: null,
+    default: "",
   },
 
   twoPlayloss: {
     type: String,
-    default: null,
+    default: "",
   },
 
   FourPlayloss: {
     type: String,
-    default: null,
+    default: "",
   },
 
   status: {
     type: String,
-    default: "active",  // Default status as "active"
+    default: "active",
   },
 
   banned: {
     type: String,
-    default: "no",  // Default banned status as "no"
+    default: "no",
   },
 
   accountHolder: {
     type: String,
-    default: null,
+    default: "",
   },
 
   accountNumber: {
     type: String,
-    default: null,
+    default: "",
   },
 
   ifsc: {
     type: String,
-    default: null,
+    default: "",
   },
 
   uniquebankid: {
     type: String,
-    default: null,
+    default: "",
   },
 
   uniqueupiid: {
     type: String,
-    default: null,  // Corrected to ensure it's set to null initially
-    unique: true,   // Ensure the UPI ID is unique
+    default: "",
+    unique: true,
   },
 
   unique_name: {
     type: String,
-    unique: true,   // Ensure the unique name is unique
+      unique: true,
+      default: "",
   },
 
   upi_id: {
     type: String,
-    unique: true,   // Ensure the UPI ID is unique
+      unique: true,
+      default: "",
   },
 
   upi_name: {
     type: String,
-    unique: true,   // Ensure the UPI name is unique
+      unique: true,
+      default: "",
   },
 
   acc_holder: {
     type: String,
-    unique: true,   // Ensure the account holder name is unique
+      unique: true,
+      default: "",
   },
 
   is_bot: {
-    type: String,   // Changed from Number to String for consistency
+    type: String,
+    default: "",  // Or you can set a boolean default: false, depending on your requirement
   },
 
   bankname: {
     type: String,
-    unique: true,   // Ensure the bank name is unique
+      unique: true,
+      default: "",
   },
 
   pan_url: {
     type: String,
-    unique: true,   // Ensure the PAN URL is unique
+      unique: true,
+      default: "",
   },
 
   pan_number: {
     type: String,
-    unique: true,   // Ensure the PAN number is unique
+      unique: true,
+      default: "",
   },
 
   aadhaar_url: {
     type: String,
-    unique: true,   // Ensure the Aadhaar URL is unique
+      unique: true,
+      default: "",
   },
 
   kyc_status: {
-    type: String,   // Changed from Number to String for consistency
+    type: String,
+    default: "",  // Or set to a valid default status, e.g., "pending"
   },
 
   ip: {
     type: String,
-    unique: true,   // Ensure the IP address is unique
+      unique: true,
+      default: "",
   },
 
   location: {
     type: String,
-    unique: true,   // Ensure the location is unique
+    default: "",  // Or set to a placeholder value
   },
 
   user_rank: {
-    type: String,   // Changed from Number to String for consistency
-  }
+    type: String,
+    default: "",  // Or another suitable default
+  },
 
+});
+
+// Automatically update the `updated_at` field before saving the document
+userSchema.pre('save', function(next) {
+  this.updated_at = Date.now();  // Set updated_at to the current time whenever the document is saved
+  next();
 });
 
 const User = mongoose.model("User", userSchema);
