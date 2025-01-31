@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   },
 
   userid: {
-    type: String,  // Ensure user ID is a string
+    type: String,
     required: false,
     unique: true,  // Ensure user ID is unique
   },
@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
   userphone: {
     type: String,
     default: null,
+    unique: true,  // Ensure user phone is unique
   },
 
   password: {
@@ -173,6 +174,74 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+
+  uniqueupiid: {
+    type: String,
+    default: null,  // Corrected to ensure it's set to null initially
+    unique: true,   // Ensure the UPI ID is unique
+  },
+
+  unique_name: {
+    type: String,
+    unique: true,   // Ensure the unique name is unique
+  },
+
+  upi_id: {
+    type: String,
+    unique: true,   // Ensure the UPI ID is unique
+  },
+
+  upi_name: {
+    type: String,
+    unique: true,   // Ensure the UPI name is unique
+  },
+
+  acc_holder: {
+    type: String,
+    unique: true,   // Ensure the account holder name is unique
+  },
+
+  is_bot: {
+    type: String,   // Changed from Number to String for consistency
+  },
+
+  bankname: {
+    type: String,
+    unique: true,   // Ensure the bank name is unique
+  },
+
+  pan_url: {
+    type: String,
+    unique: true,   // Ensure the PAN URL is unique
+  },
+
+  pan_number: {
+    type: String,
+    unique: true,   // Ensure the PAN number is unique
+  },
+
+  aadhaar_url: {
+    type: String,
+    unique: true,   // Ensure the Aadhaar URL is unique
+  },
+
+  kyc_status: {
+    type: String,   // Changed from Number to String for consistency
+  },
+
+  ip: {
+    type: String,
+    unique: true,   // Ensure the IP address is unique
+  },
+
+  location: {
+    type: String,
+    unique: true,   // Ensure the location is unique
+  },
+
+  user_rank: {
+    type: String,   // Changed from Number to String for consistency
+  }
 
 });
 
