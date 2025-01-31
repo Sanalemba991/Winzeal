@@ -42,8 +42,8 @@ const userSchema = new mongoose.Schema({
 
   password: {
     type: String,
-      required: true,
-      default: "",
+    required: true,
+    default: "",
   },
 
   OTPCode: {
@@ -176,34 +176,35 @@ const userSchema = new mongoose.Schema({
     default: "",
   },
 
+  // Removed unique constraint for fields that can be empty or optional
   uniqueupiid: {
     type: String,
     default: "",
-    unique: true,
+    // Remove `unique: true` to allow empty or duplicate values
   },
 
   unique_name: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Remove `unique: true` for fields that can be empty
   },
 
   upi_id: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Remove `unique: true`
   },
 
   upi_name: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Remove `unique: true`
   },
 
   acc_holder: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Remove `unique: true`
   },
 
   is_bot: {
@@ -213,26 +214,26 @@ const userSchema = new mongoose.Schema({
 
   bankname: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Removed unique: true
   },
 
   pan_url: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Removed unique: true
   },
 
   pan_number: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Removed unique: true
   },
 
   aadhaar_url: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Removed unique: true
   },
 
   kyc_status: {
@@ -242,8 +243,8 @@ const userSchema = new mongoose.Schema({
 
   ip: {
     type: String,
-      unique: true,
-      default: "",
+    default: "",
+    // Removed unique: true
   },
 
   location: {
