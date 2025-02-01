@@ -145,9 +145,9 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});app.get("/user", async (req, res) => {
+});app.get("/user/:email", async (req, res) => {
   try {
-    const { email } = req.query;
+    const { email } = req.params; // Get the email from the route parameter
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -164,6 +164,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 app.listen(process.env.PORT, () => {
