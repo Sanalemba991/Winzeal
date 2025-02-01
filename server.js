@@ -164,6 +164,19 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.get("/users", async (req, res) => {
+  try {
+    const users = await UserModel.find();  // Find all users in the database
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: "No users found" });
+    }
+
+    res.status(200).json(users);  // Return the array of users
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 
