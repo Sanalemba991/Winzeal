@@ -87,7 +87,7 @@ app.post("/signup", async (req, res) => {
 
     if (result.success) {
       res.status(201).json({
-        userId: savedUser.userid, // Return the custom user ID
+        userId: savedUser.userid, 
         name: savedUser.name,
         email: savedUser.email,
         id: savedUser._id,
@@ -147,7 +147,7 @@ app.post("/login", async (req, res) => {
   }
 });app.get("/user/:email", async (req, res) => {
   try {
-    const { email } = req.params; // Get the email from the route parameter
+    const { email } = req.params; 
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -159,20 +159,20 @@ app.post("/login", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(user);  // Return the entire user object with all data
+    res.status(200).json(user);  
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 app.get("/users", async (req, res) => {
   try {
-    const users = await UserModel.find();  // Find all users in the database
+    const users = await UserModel.find(); 
 
     if (!users || users.length === 0) {
       return res.status(404).json({ error: "No users found" });
     }
 
-    res.status(200).json(users);  // Return the array of users
+    res.status(200).json(users);  
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
