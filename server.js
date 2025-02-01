@@ -51,7 +51,7 @@ const sendMessage = async (mobile, token) => {
 
 const { v4: uuidv4 } = require("uuid");
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", async (req, res) => {              //for registration
   const { name, email, password, phone } = req.body;
 
   try {
@@ -102,7 +102,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/verify-otp", (req, res) => {
+app.post("/verify-otp", (req, res) => { //verify otp
   const { mobileNumber, otp } = req.body;
 
   if (!otp || !mobileNumber) {
@@ -116,7 +116,7 @@ app.post("/verify-otp", (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", async (req, res) => { // login
   try {
     const { email, password } = req.body;
 
@@ -145,7 +145,7 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});app.get("/user/:email", async (req, res) => {
+});app.get("/user/:email", async (req, res) => { //get users by email
   try {
     const { email } = req.params; 
 
@@ -164,7 +164,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.get("/users", async (req, res) => {
+app.get("/admin", async (req, res) => {   //get all the users
   try {
     const users = await UserModel.find(); 
 
