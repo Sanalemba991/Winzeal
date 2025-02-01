@@ -145,7 +145,26 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});app.get("/user", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(user);  // Return the entire user object with all data
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
+
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
