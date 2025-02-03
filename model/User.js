@@ -9,12 +9,12 @@ const userSchema = new mongoose.Schema({
 
   created_at: {
     type: Date,
-    default: Date.now,  
+    default: Date.now,  // Automatically sets the creation timestamp
   },
 
   updated_at: {
     type: Date,
-    default: Date.now, 
+    default: Date.now,  // Sets the initial updated_at to the creation time
   },
 
   userid: {
@@ -176,92 +176,92 @@ const userSchema = new mongoose.Schema({
     default: "",
   },
 
- 
+  // Removed unique constraint for fields that can be empty or optional
   uniqueupiid: {
     type: String,
     default: "",
-
+    // Remove `unique: true` to allow empty or duplicate values
   },
 
   unique_name: {
     type: String,
     default: "",
-   
+    // Remove `unique: true` for fields that can be empty
   },
 
   upi_id: {
     type: String,
     default: "",
-
+    // Remove `unique: true`
   },
 
   upi_name: {
     type: String,
     default: "",
-
+    // Remove `unique: true`
   },
 
   acc_holder: {
     type: String,
     default: "",
-
+    // Remove `unique: true`
   },
 
   is_bot: {
     type: String,
-    default: "",  
+    default: "",  // Or you can set a boolean default: false, depending on your requirement
   },
 
   bankname: {
     type: String,
     default: "",
-  
+    // Removed unique: true
   },
 
   pan_url: {
     type: String,
     default: "",
-
+    // Removed unique: true
   },
 
   pan_number: {
     type: String,
     default: "",
-
+    // Removed unique: true
   },
 
   aadhaar_url: {
     type: String,
     default: "",
- 
+    // Removed unique: true
   },
 
   kyc_status: {
     type: String,
-    default: "",  
+    default: "",  // Or set to a valid default status, e.g., "pending"
   },
 
   ip: {
     type: String,
     default: "",
-
+    // Removed unique: true
   },
 
   location: {
     type: String,
-    default: "", 
+    default: "",  // Or set to a placeholder value
   },
 
   user_rank: {
     type: String,
-    default: "",  
+    default: "",  // Or another suitable default
   },
 
 });
 
-
+// Automatically update the `updated_at` field before saving the document
 userSchema.pre('save', function(next) {
-  this.updated_at = Date.now(); 
+  this.updated_at = Date.now();  // Set updated_at to the current time whenever the document is saved
   next();
 });
 
