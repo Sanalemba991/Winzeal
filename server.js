@@ -51,7 +51,7 @@ const sendMessage = async (mobile, token) => {
 
 const { v4: uuidv4 } = require("uuid");
 
-app.post("/signup", async (req, res) => {              //for registration
+app.post("/signup", async (req, res) => {
   const { name, email, password, phone } = req.body;
 
   try {
@@ -65,7 +65,7 @@ app.post("/signup", async (req, res) => {              //for registration
     });
 
     if (existingUser) {
-      return res.status(409).json({ error: "User already exists with given email, user ID, or phone number" });
+      return res.status(409).json({ error: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -87,26 +87,26 @@ app.post("/signup", async (req, res) => {              //for registration
 
     if (result.success) {
       res.status(201).json({
-        userId: savedUser.userid, 
+        userId: savedUser.userid,
         name: savedUser.name,
         email: savedUser.email,
         id: savedUser._id,
         otpSent: true,
-        message: "User registered successfully. OTP sent to the registered phone number.",
+        message: "User registered successfully. OTP sent to the phone.",
       });
     } else {
-      res.status(500).json({ error: "User registered, but failed to send OTP." });
+      res.status(500).json({ error: "Failed to send OTP." });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post("/verify-otp", (req, res) => { //verify otp
+app.post("/verify-otp", (req, res) => {
   const { mobileNumber, otp } = req.body;
 
   if (!otp || !mobileNumber) {
-    return res.status(400).json({ success: false, message: "Mobile number and OTP are required." });
+    return res.status(400).json({ success: false, message: "OTP and mobile number are required." });
   }
 
   if (otpStore[mobileNumber] && otpStore[mobileNumber] === otp) {
@@ -116,7 +116,7 @@ app.post("/verify-otp", (req, res) => { //verify otp
   }
 });
 
-app.post("/login", async (req, res) => { // login
+app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -145,9 +145,11 @@ app.post("/login", async (req, res) => { // login
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});app.get("/user/:email", async (req, res) => { //get users by email
+});
+
+app.get("/user/:email", async (req, res) => {
   try {
-    const { email } = req.params; 
+    const { email } = req.params;
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -159,27 +161,55 @@ app.post("/login", async (req, res) => { // login
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(user);  
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-app.get("/admin", async (req, res) => {   //get all the users
-  try {
-    const users = await UserModel.find(); 
+// PATCH Route to update user details by email
+app.patch("/user/:email", async (req, res) => {
+  const { email } = req.params;  // Get the email from the route parameters
+  const updateFields = req.body;  // Get the fields to update from the request body
 
-    if (!users || users.length === 0) {
-      return res.status(404).json({ error: "No users found" });
+  try {
+    // Find the user by email
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(users);  
+    // Update only the provided fields
+    for (let key in updateFields) {
+      if (updateFields.hasOwnProperty(key) && key !== 'password') { // Prevent overwriting of password field directly
+        user[key] = updateFields[key];
+      }
+    }
+
+    // If the password is being updated, hash it before saving
+    if (updateFields.password) {
+      const hashedPassword = await bcrypt.hash(updateFields.password, 10);
+      user.password = hashedPassword;
+    }
+
+    // Save the updated user document
+    await user.save();
+
+    res.status(200).json({
+      message: "User updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        updated_at: user.updated_at,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-
-
+// Server setup
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
