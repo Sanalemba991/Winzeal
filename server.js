@@ -106,11 +106,15 @@ app.post("/verify-otp", (req, res) => {
   const { mobileNumber, otp } = req.body;
 
   if (!otp || !mobileNumber) {
-    return res.status(400).json({ success: false, message: "OTP and mobile number are required." });
+    return res
+      .status(400)
+      .json({ success: false, message: "OTP and mobile number are required." });
   }
 
   if (otpStore[mobileNumber] && otpStore[mobileNumber] === otp) {
-    res.status(200).json({ success: true, message: "OTP verified successfully!" });
+    res
+      .status(200)
+      .json({ success: true, message: "OTP verified successfully!" });
   } else {
     res.status(400).json({ success: false, message: "Invalid OTP." });
   }
@@ -147,6 +151,23 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/admin", async (req, res) => {
+  try {
+    const users = await UserModel.find();
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: "No users found" });
+    }
+
+    res.status(200).json({
+      message: "Users fetched successfully",
+      users: users,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/user/:email", async (req, res) => {
   try {
     const { email } = req.params;
@@ -166,32 +187,28 @@ app.get("/user/:email", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// PATCH Route to update user details by email
+
 app.patch("/user/:email", async (req, res) => {
-  const { email } = req.params;  // Get the email from the route parameters
-  const updateFields = req.body;  // Get the fields to update from the request body
+  const { email } = req.params;
+  const updateFields = req.body;
 
   try {
-    // Find the user by email
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Update only the provided fields
     for (let key in updateFields) {
-      if (updateFields.hasOwnProperty(key) && key !== 'password') { // Prevent overwriting of password field directly
+      if (updateFields.hasOwnProperty(key) && key !== "password") {
         user[key] = updateFields[key];
       }
     }
 
-    // If the password is being updated, hash it before saving
     if (updateFields.password) {
       const hashedPassword = await bcrypt.hash(updateFields.password, 10);
       user.password = hashedPassword;
     }
 
-    // Save the updated user document
     await user.save();
 
     res.status(200).json({
@@ -209,7 +226,6 @@ app.patch("/user/:email", async (req, res) => {
   }
 });
 
-// Server setup
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
