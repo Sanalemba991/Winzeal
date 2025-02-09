@@ -248,10 +248,10 @@ app.post("/api/bid", async (req, res) => {
   }
 });
 
-// GET endpoint to fetch all bids
+
 app.get("/api/bids", async (req, res) => {
   try {
-    const bids = await Bid.find().populate("userId", "name email"); // Populate user data
+    const bids = await Bid.find().populate("userId", "name email"); 
     res.status(200).json(bids);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch bids", error: err });
