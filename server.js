@@ -80,11 +80,9 @@ app.post("/signup", async (req, res) => {
 
     const savedUser = await newUser.save();
 
-  
     const token = generateOTP();
     otpStore[phone] = token;
 
-   
     savedUser.OTPCode = token;
     await savedUser.save();
 
@@ -106,7 +104,6 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 app.post("/verify-otp", (req, res) => {
   const { mobileNumber, otp } = req.body;
