@@ -6,6 +6,7 @@ const fast2sms = require("fast-two-sms");
 const otplib = require("otplib");
 const jwt = require("jsonwebtoken");
 const UserModel = require("./model/User");
+const Bid = require("./model/Bid.js");
 
 const authenticateJWT = require("./middlewares/authenticateJWT");
 const cors = require("cors");
@@ -228,6 +229,35 @@ app.patch("/user/:email", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.post("/api/bid", async (req, res) => {
+  try {
+    const { userId, entry_fee, first_prize, second_prize, game_type } = req.body;
+
+    const newBid = new Bid({
+      userId,
+      entry_fee,
+      first_prize,
+      second_prize,
+      game_type,
+    });
+
+    await newBid.save();
+    res.status(201).json({ message: "Bid created successfully", bid: newBid });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create bid", error: err });
+  }
+});
+
+// GET endpoint to fetch all bids
+app.get("/api/bids", async (req, res) => {
+  try {
+    const bids = await Bid.find().populate("userId", "name email"); // Populate user data
+    res.status(200).json(bids);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch bids", error: err });
+  }
+});
+
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
