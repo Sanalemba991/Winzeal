@@ -162,37 +162,37 @@ app.get("/api/bids", async (req, res) => {
 // Update Bid with History Route
 app.patch("/api/bid/user/:userid", async (req, res) => {
   try {
-    const { userid } = req.params;
-    const updateFields = req.body;
+    const { userid } = req.params;  // The userId comes from the URL parameters
+    const updateFields = req.body;  // The fields to update come from the request body
 
-    // Find the existing bid by userid
+    // Find the existing bid by userId
     const bid = await Bid.findOne({ userid });
 
     if (!bid) {
-      return res
-        .status(404)
-        .json({ message: "Bid not found for the provided userid" });
+      return res.status(404).json({ message: "Bid not found for the provided userid" });
     }
 
-   
+    // Create a history entry before updating the bid
     const bidHistory = new BidHistory({
-      bidId: bid._id,
-      changes: { ...bid.toObject() },  
+      userId: userid,  // Store the userId
+      bidId: bid._id,  // Store the bidId
+      changes: { ...bid.toObject() },  // Capture the current state of the bid (before the update)
     });
 
-    // Save the bid history
+    // Save the bid history entry
     await bidHistory.save();
 
     // Update the bid with the new fields
     for (let key in updateFields) {
       if (updateFields.hasOwnProperty(key)) {
-        bid[key] = updateFields[key];
+        bid[key] = updateFields[key];  // Apply the updates to the bid
       }
     }
 
     // Save the updated bid
     await bid.save();
 
+    // Return the updated bid
     res.status(200).json({
       message: "Bid updated successfully",
       bid,
@@ -205,17 +205,17 @@ app.patch("/api/bid/user/:userid", async (req, res) => {
   }
 });
 
-// Get Bid History Route
-app.get("/api/bid/history/:bidId", async (req, res) => {
+app.get("/api/bid/history/:userid", async (req, res) => {
   try {
-    const { bidId } = req.params;
+    const { userid } = req.params;  
 
-    // Fetch bid history records
-    const history = await BidHistory.find({ bidId }).sort({ updatedAt: -1 });
+  
+    const history = await BidHistory.find({ userId: userid }).sort({ updatedAt: -1 });
 
     if (history.length === 0) {
-      return res.status(404).json({ message: "No history found for this bid" });
+      return res.status(404).json({ message: "No history found for this user" });
     }
+
 
     res.status(200).json({
       message: "Bid history fetched successfully",
