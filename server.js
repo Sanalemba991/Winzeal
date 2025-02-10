@@ -6,7 +6,8 @@ const fast2sms = require("fast-two-sms");
 const otplib = require("otplib");
 const jwt = require("jsonwebtoken");
 const UserModel = require("./model/User");
-const Bid = require("./model/Bid.js");
+const Bid = require("./model/Bid");
+const BidHistory = require("./model/BidHistory");
 
 const authenticateJWT = require("./middlewares/authenticateJWT");
 const cors = require("cors");
@@ -27,6 +28,7 @@ mongoose
     console.error("Error connecting to MongoDB:", err);
   });
 
+// OTP and other utility functions
 let otpStore = {};
 
 const generateOTP = () => {
@@ -52,6 +54,7 @@ const sendMessage = async (mobile, token) => {
 
 const { v4: uuidv4 } = require("uuid");
 
+// Signup Route
 app.post("/signup", async (req, res) => {
   const { name, email, password, phone } = req.body;
 
@@ -106,6 +109,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+// Verify OTP Route
 app.post("/verify-otp", (req, res) => {
   const { mobileNumber, otp } = req.body;
 
@@ -124,111 +128,7 @@ app.post("/verify-otp", (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "No user found" });
-    }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid password" });
-    }
-
-    const token = jwt.sign(
-      { email: user.email, id: user._id },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "90d",
-      }
-    );
-
-    res.status(200).json({
-      message: "Login successful",
-      token: token,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/admin", async (req, res) => {
-  try {
-    const users = await UserModel.find();
-
-    if (!users || users.length === 0) {
-      return res.status(404).json({ error: "No users found" });
-    }
-
-    res.status(200).json({
-      message: "Users fetched successfully",
-      users: users,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/user/:email", async (req, res) => {
-  try {
-    const { email } = req.params;
-
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" });
-    }
-
-    const user = await UserModel.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.patch("/user/:email", async (req, res) => {
-  const { email } = req.params;
-  const updateFields = req.body;
-
-  try {
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    for (let key in updateFields) {
-      if (updateFields.hasOwnProperty(key) && key !== "password") {
-        user[key] = updateFields[key];
-      }
-    }
-
-    if (updateFields.password) {
-      const hashedPassword = await bcrypt.hash(updateFields.password, 10);
-      user.password = hashedPassword;
-    }
-
-    await user.save();
-
-    res.status(200).json({
-      message: "User updated successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        updated_at: user.updated_at,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// Bid Creation Route
 app.post("/api/bid", async (req, res) => {
   try {
     const { userid, entry_fee, first_prize, second_prize, game_type } =
@@ -249,6 +149,7 @@ app.post("/api/bid", async (req, res) => {
   }
 });
 
+// Get All Bids Route
 app.get("/api/bids", async (req, res) => {
   try {
     const bids = await Bid.find().populate("userid", "name email");
@@ -257,11 +158,14 @@ app.get("/api/bids", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch bids", error: err });
   }
 });
+
+// Update Bid with History Route
 app.patch("/api/bid/user/:userid", async (req, res) => {
   try {
     const { userid } = req.params;
     const updateFields = req.body;
 
+    // Find the existing bid by userid
     const bid = await Bid.findOne({ userid });
 
     if (!bid) {
@@ -270,17 +174,28 @@ app.patch("/api/bid/user/:userid", async (req, res) => {
         .json({ message: "Bid not found for the provided userid" });
     }
 
+   
+    const bidHistory = new BidHistory({
+      bidId: bid._id,
+      changes: { ...bid.toObject() },  
+    });
+
+    // Save the bid history
+    await bidHistory.save();
+
+    // Update the bid with the new fields
     for (let key in updateFields) {
       if (updateFields.hasOwnProperty(key)) {
         bid[key] = updateFields[key];
       }
     }
 
+    // Save the updated bid
     await bid.save();
 
     res.status(200).json({
       message: "Bid updated successfully",
-      bid: bid,
+      bid,
     });
   } catch (err) {
     res.status(500).json({
@@ -290,6 +205,29 @@ app.patch("/api/bid/user/:userid", async (req, res) => {
   }
 });
 
+// Get Bid History Route
+app.get("/api/bid/history/:bidId", async (req, res) => {
+  try {
+    const { bidId } = req.params;
+
+    // Fetch bid history records
+    const history = await BidHistory.find({ bidId }).sort({ updatedAt: -1 });
+
+    if (history.length === 0) {
+      return res.status(404).json({ message: "No history found for this bid" });
+    }
+
+    res.status(200).json({
+      message: "Bid history fetched successfully",
+      history,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to fetch bid history",
+      error: err.message,
+    });
+  }
+});
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
