@@ -231,7 +231,8 @@ app.patch("/user/:email", async (req, res) => {
 });
 app.post("/api/bid", async (req, res) => {
   try {
-    const { userid, entry_fee, first_prize, second_prize, game_type } = req.body;
+    const { userid, entry_fee, first_prize, second_prize, game_type } =
+      req.body;
 
     const newBid = new Bid({
       userid,
@@ -248,7 +249,6 @@ app.post("/api/bid", async (req, res) => {
   }
 });
 
-// Get all bids
 app.get("/api/bids", async (req, res) => {
   try {
     const bids = await Bid.find().populate("userid", "name email");
@@ -257,6 +257,39 @@ app.get("/api/bids", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch bids", error: err });
   }
 });
+app.patch("/api/bid/user/:userid", async (req, res) => {
+  try {
+    const { userid } = req.params;
+    const updateFields = req.body;
+
+    const bid = await Bid.findOne({ userid });
+
+    if (!bid) {
+      return res
+        .status(404)
+        .json({ message: "Bid not found for the provided userid" });
+    }
+
+    for (let key in updateFields) {
+      if (updateFields.hasOwnProperty(key)) {
+        bid[key] = updateFields[key];
+      }
+    }
+
+    await bid.save();
+
+    res.status(200).json({
+      message: "Bid updated successfully",
+      bid: bid,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to update bid",
+      error: err.message,
+    });
+  }
+});
+
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
