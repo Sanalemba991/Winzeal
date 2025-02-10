@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const bidSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+  userid: {
+    type: String,  // Referencing `userid` as String
+    ref: "User",   // Reference to the `User` model
     required: true,
   },
 
@@ -38,7 +38,7 @@ const bidSchema = new mongoose.Schema({
   },
 });
 
-
+// Automatically update `updated_at` before saving the document
 bidSchema.pre('save', function(next) {
   this.updated_at = Date.now(); 
   next();

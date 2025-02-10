@@ -231,10 +231,10 @@ app.patch("/user/:email", async (req, res) => {
 });
 app.post("/api/bid", async (req, res) => {
   try {
-    const { userId, entry_fee, first_prize, second_prize, game_type } = req.body;
+    const { userid, entry_fee, first_prize, second_prize, game_type } = req.body;
 
     const newBid = new Bid({
-      userId,
+      userid,
       entry_fee,
       first_prize,
       second_prize,
@@ -248,16 +248,15 @@ app.post("/api/bid", async (req, res) => {
   }
 });
 
-
+// Get all bids
 app.get("/api/bids", async (req, res) => {
   try {
-    const bids = await Bid.find().populate("userId", "name email"); 
+    const bids = await Bid.find().populate("userid", "name email");
     res.status(200).json(bids);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch bids", error: err });
   }
 });
-
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
