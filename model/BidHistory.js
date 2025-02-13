@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const BidHistorySchema = new mongoose.Schema({
   userId: {
-    type: String,  // `String` type for userId (as per your earlier design)
-    ref: 'User',   // Reference to the `User` model
+    type: String, 
+    ref: 'User',   
     required: true,
   },
   bidId: {

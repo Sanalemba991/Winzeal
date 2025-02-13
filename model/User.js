@@ -9,15 +9,15 @@ const userSchema = new mongoose.Schema({
 
   created_at: {
     type: Date,
-    default: Date.now,  // Automatically sets the creation timestamp
+    default: Date.now,  
   },
 
   updated_at: {
     type: Date,
-    default: Date.now,  // Sets the initial updated_at to the creation time
+    default: Date.now,  
   },
 
-  userid: {
+  userId: {
     type: String,
     required: true,
     unique: true,
