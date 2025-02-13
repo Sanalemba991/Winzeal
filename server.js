@@ -28,7 +28,6 @@ mongoose
     console.error("Error connecting to MongoDB:", err);
   });
 
-// OTP and other utility functions
 let otpStore = {};
 
 const generateOTP = () => {
@@ -54,7 +53,7 @@ const sendMessage = async (mobile, token) => {
 
 const { v4: uuidv4 } = require("uuid");
 
-// Signup Route
+
 app.post("/signup", async (req, res) => {
   const { name, email, password, phone } = req.body;
 
@@ -75,7 +74,7 @@ app.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new UserModel({
-      userid: customUserId,
+      userId: customUserId,
       name,
       email,
       password: hashedPassword,
@@ -109,7 +108,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// Verify OTP Route
+
 app.post("/verify-otp", (req, res) => {
   const { mobileNumber, otp } = req.body;
 
@@ -128,14 +127,55 @@ app.post("/verify-otp", (req, res) => {
   }
 });
 
-// Bid Creation Route
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+
+    const user = await UserModel.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+   
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+   
+    user.playcoin = (parseInt(user.playcoin) + 1000).toString();  
+    await user.save();
+
+ 
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "356d" });
+
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        playcoin: user.playcoin,
+        token,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
 app.post("/api/bid", async (req, res) => {
   try {
-    const { userid, entry_fee, first_prize, second_prize, game_type } =
+    const { userId, entry_fee, first_prize, second_prize, game_type } =
       req.body;
 
     const newBid = new Bid({
-      userid,
+      userId,
       entry_fee,
       first_prize,
       second_prize,
@@ -148,51 +188,51 @@ app.post("/api/bid", async (req, res) => {
     res.status(500).json({ message: "Failed to create bid", error: err });
   }
 });
-
-// Get All Bids Route
-app.get("/api/bids", async (req, res) => {
+app.post("/api/bids", async (req, res) => {
   try {
-    const bids = await Bid.find().populate("userid", "name email");
+    // Fetch all bids and populate userId with 'name' and 'email'
+    const bids = await Bid.find().populate("userId", "name email");
     res.status(200).json(bids);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch bids", error: err });
   }
 });
 
-// Update Bid with History Route
-app.patch("/api/bid/user/:userid", async (req, res) => {
-  try {
-    const { userid } = req.params;  // The userId comes from the URL parameters
-    const updateFields = req.body;  // The fields to update come from the request body
 
-    // Find the existing bid by userId
-    const bid = await Bid.findOne({ userid });
+
+
+app.patch("/api/bid/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;  
+    const updateFields = req.body;  
+
+
+    const bid = await Bid.findOne({ userId });
 
     if (!bid) {
       return res.status(404).json({ message: "Bid not found for the provided userid" });
     }
 
-    // Create a history entry before updating the bid
+  
     const bidHistory = new BidHistory({
-      userId: userid,  // Store the userId
-      bidId: bid._id,  // Store the bidId
-      changes: { ...bid.toObject() },  // Capture the current state of the bid (before the update)
+      userId: userId, 
+      bidId: bid._id,  
+      changes: { ...bid.toObject() },  
     });
 
-    // Save the bid history entry
+  
     await bidHistory.save();
 
-    // Update the bid with the new fields
+
     for (let key in updateFields) {
       if (updateFields.hasOwnProperty(key)) {
-        bid[key] = updateFields[key];  // Apply the updates to the bid
+        bid[key] = updateFields[key];  
       }
     }
 
-    // Save the updated bid
+  
     await bid.save();
 
-    // Return the updated bid
     res.status(200).json({
       message: "Bid updated successfully",
       bid,
@@ -204,18 +244,15 @@ app.patch("/api/bid/user/:userid", async (req, res) => {
     });
   }
 });
-
-app.get("/api/bid/history/:userid", async (req, res) => {
+app.post("/api/bid/history/:userId", async (req, res) => {
   try {
-    const { userid } = req.params;  
+    const { userId } = req.params; 
 
-  
-    const history = await BidHistory.find({ userId: userid }).sort({ updatedAt: -1 });
+    const history = await BidHistory.find({ userId: userId }).sort({ updatedAt: -1 });
 
     if (history.length === 0) {
       return res.status(404).json({ message: "No history found for this user" });
     }
-
 
     res.status(200).json({
       message: "Bid history fetched successfully",
@@ -228,6 +265,7 @@ app.get("/api/bid/history/:userid", async (req, res) => {
     });
   }
 });
+
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
