@@ -166,7 +166,60 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// Forgot Password Route
+app.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
 
+  try {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const token = generateOTP();
+    otpStore[email] = token;
+
+    const result = await sendMessage(user.phone, token);
+
+    if (result.success) {
+      res.status(200).json({
+        message: "OTP sent successfully to your phone for password reset.",
+      });
+    } else {
+      res.status(500).json({ error: "Failed to send OTP." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reset Password Route
+app.post("/reset-password", async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (otpStore[email] !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    delete otpStore[email]; // Clear OTP after successful reset
+
+    res.status(200).json({ message: "Password reset successful!" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 app.post("/api/bid", async (req, res) => {
